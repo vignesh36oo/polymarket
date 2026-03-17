@@ -2,7 +2,7 @@
 
 import React from "react";
 import MarketCard from "@/components/MarketCard";
-import { Search, Settings2, Bookmark, ChevronRight } from "lucide-react";
+import { Search, Settings2, Bookmark, ChevronRight, ChevronLeft } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 
 interface MarketsDisplayProps {
@@ -10,30 +10,102 @@ interface MarketsDisplayProps {
 }
 
 export default function MarketsDisplay({ category }: MarketsDisplayProps) {
-  const { items: markets } = useAppSelector((state) => state.markets);
-
   const [activeFilter, setActiveFilter] = React.useState("All");
+  const [markets, setMarkets] = React.useState<any[]>([]);
 
-  const subCategories = [
-    "All",
-    "Trump",
-    "Iran",
-    "Oscars",
-    "Oil",
-    "Lebanon",
-    "Colombia Election",
-    "Tweet Markets",
-    "Tariffs",
-    "Global Elections",
-    "Nepal Election",
-    "Midterms",
-    "Primaries",
-    "Reza Pahlavi",
-  ];
+  const [subCategories, setSubCategories] = React.useState<string[]>(["All"]);
+
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [showLeftScroll, setShowLeftScroll] = React.useState(false);
+  const [showRightScroll, setShowRightScroll] = React.useState(true);
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftScroll(scrollLeft > 0);
+      setShowRightScroll(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  React.useEffect(() => {
+    handleScroll();
+    window.addEventListener('resize', handleScroll);
+    return () => window.removeEventListener('resize', handleScroll);
+  }, [subCategories]);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 300;
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  // Fetch Questions (Markets) based on selected activeFilter
+  React.useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004/api';
+        
+        // Let's pass the active filter as 'market' payload. If it's 'All', our backend handles it.
+        const response = await fetch(`${url}/question/list`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ market: activeFilter })
+        });
+        
+        const data = await response.json();
+        if (data.success && data.result) {
+          // Map backend questions to our MarketCard props
+          const formattedMarkets = data.result.map((q: any) => {
+            const yesAmount = parseFloat(q.yesPool || 0);
+            const noAmount = parseFloat(q.noPool || 0);
+            const total = yesAmount + noAmount;
+            const yesPercent = total > 0 ? Math.round((yesAmount / total) * 100) : 50;
+
+            return {
+              id: q._id,
+              title: q.title || "Untitled Market",
+              image: q.image || "https://cryptologos.cc/logos/polymarket-poly-logo.svg", // Fallback image if missing
+              options: [{ name: "Yes", percentage: yesPercent }],
+              volume: `$${(total).toLocaleString()}`, // Using pool total as volume approximation for now
+              category: q.market,
+              variant: "binary", // Ensure cards show as yes/no binary defaults for these
+              badge: q.status === "resolved" ? "RESOLVED" : "LIVE"
+            };
+          });
+          setMarkets(formattedMarkets);
+        }
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+      }
+    };
+    fetchQuestions();
+  }, [activeFilter]);
+
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004/api';
+        const response = await fetch(`${url}/market/get-markets`);
+        const data = await response.json();
+        if (data.success && data.result) {
+          const apiCategories = data.result.map((m: any) => m.name);
+          setSubCategories(["All", ...apiCategories]);
+        }
+      } catch (error) {
+        console.error("Error fetching markets:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const normalize = (str: string) =>
     str.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-");
 
+  // Local text search filtering on top of fetched items
   const filteredMarkets = (
     category === "All" || category === "Trending"
       ? markets
@@ -42,11 +114,6 @@ export default function MarketsDisplay({ category }: MarketsDisplayProps) {
             normalize(m.category) === normalize(category) ||
             normalize(m.title).includes(normalize(category)),
         )
-  ).filter(
-    (m) =>
-      activeFilter === "All" ||
-      m.title.toLowerCase().includes(activeFilter.toLowerCase()) ||
-      m.category.toLowerCase().includes(activeFilter.toLowerCase()),
   );
 
   return (
@@ -71,7 +138,23 @@ export default function MarketsDisplay({ category }: MarketsDisplayProps) {
 
       {/* Sub-Category Filter Bar */}
       <div className="relative mb-8 group">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 pr-12">
+        {showLeftScroll && (
+          <>
+            <div className="absolute left-0 top-0 bottom-2 w-16 bg-gradient-to-r from-white dark:from-[#0b0c10] to-transparent pointer-events-none z-10"></div>
+            <button 
+              onClick={() => scroll("left")}
+              className="absolute left-0 top-1/2 -translate-y-[calc(50%+4px)] w-8 h-8 flex items-center justify-center bg-white dark:bg-[#12151c] border border-zinc-200 dark:border-zinc-800 rounded-full shadow-md text-zinc-400 hover:text-black dark:hover:text-white transition-all z-20"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          </>
+        )}
+
+        <div 
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 px-8"
+        >
           {subCategories.map((sub, i) => (
             <button
               key={i}
@@ -86,10 +169,18 @@ export default function MarketsDisplay({ category }: MarketsDisplayProps) {
             </button>
           ))}
         </div>
-        <div className="absolute right-0 top-0 bottom-2 w-16 bg-gradient-to-l from-white dark:from-[#0b0c10] to-transparent pointer-events-none"></div>
-        <button className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-white dark:bg-[#12151c] border border-zinc-200 dark:border-zinc-800 rounded-full shadow-md text-zinc-400 hover:text-black dark:hover:text-white transition-all">
-          <ChevronRight size={16} />
-        </button>
+
+        {showRightScroll && (
+          <>
+            <div className="absolute right-0 top-0 bottom-2 w-16 bg-gradient-to-l from-white dark:from-[#0b0c10] to-transparent pointer-events-none z-10"></div>
+            <button 
+              onClick={() => scroll("right")}
+              className="absolute right-0 top-1/2 -translate-y-[calc(50%+4px)] w-8 h-8 flex items-center justify-center bg-white dark:bg-[#12151c] border border-zinc-200 dark:border-zinc-800 rounded-full shadow-md text-zinc-400 hover:text-black dark:hover:text-white transition-all z-20"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Markets Grid */}

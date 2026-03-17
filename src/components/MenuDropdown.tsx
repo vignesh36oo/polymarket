@@ -1,23 +1,24 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   Trophy,
   DollarSign,
   Settings,
   Moon,
-  ChevronRight,
-  Target,
-  FileText,
   HelpCircle,
   Shield,
+  ChevronRight,
 } from "lucide-react";
+
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toggleTheme } from "@/lib/redux/features/theme/themeSlice";
 
 export default function MenuDropdown() {
   const mode = useAppSelector((state) => state.theme.mode);
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -25,7 +26,7 @@ export default function MenuDropdown() {
   };
 
   return (
-    <div className="absolute top-14 right-0 w-64 bg-white dark:bg-[#161922] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+    <div className="top-14 right-0 w-64 bg-white dark:bg-[#161922] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
       {/* Prime Actions */}
       <div className="px-2 space-y-1">
         <button className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors group text-zinc-900 dark:text-zinc-100">
@@ -40,6 +41,13 @@ export default function MenuDropdown() {
             <DollarSign size={12} className="text-white" />
           </div>
           <span className="text-sm font-semibold">Rewards</span>
+        </button>
+        <button
+          onClick={() => router.push("/settings?tab=profile")}
+          className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors group text-zinc-900 dark:text-zinc-100"
+        >
+          <Settings size={18} className="text-zinc-500 group-hover:rotate-45 transition-transform" />
+          <span className="text-sm font-semibold">Settings</span>
         </button>
         <button className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors group text-zinc-900 dark:text-zinc-100">
           <Settings size={18} className="text-rose-400" />

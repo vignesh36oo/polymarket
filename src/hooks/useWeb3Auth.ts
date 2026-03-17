@@ -6,7 +6,7 @@ import { login, logout } from '@/lib/redux/features/auth/authSlice'
 import axios from 'axios'
 import { useCallback, useEffect, useState } from 'react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004/api'
 
 /**
  * Hook to handle Web3 Authentication with the backend.

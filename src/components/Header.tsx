@@ -10,8 +10,10 @@ import {
   ChevronRight,
   Sun,
   Moon,
+  Bell,
+  ChevronDown,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toggleTheme } from "@/lib/redux/features/theme/themeSlice";
 
 const categories = [
@@ -45,7 +47,7 @@ import DepositModal from "./trading/DepositModal";
 import { useWeb3Auth } from "@/hooks/useWeb3Auth";
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004/api';
 
 export default function Header() {
   const [isAuthOpen, setIsAuthOpen] = React.useState(false);
@@ -54,6 +56,7 @@ export default function Header() {
 
   const dispatch = useAppDispatch();
   const pathname = usePathname();
+  const router = useRouter();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const themeMode = useAppSelector((state) => state.theme.mode);
   const { handleLogout, address } = useWeb3Auth();
@@ -109,7 +112,7 @@ export default function Header() {
             <div className="w-3 h-3 bg-white dark:bg-[#0b0c10] rounded-sm z-10"></div>
           </div>
           <span className="text-black dark:text-white font-bold text-xl tracking-tight hidden sm:block">
-            Polymarket
+            Alphamarket
           </span>
         </Link>
 
@@ -120,7 +123,7 @@ export default function Header() {
           </div>
           <input
             type="text"
-            placeholder="Search polymarkets..."
+            placeholder="Search alphamarkets..."
             className="w-full bg-zinc-100 dark:bg-[#12151c] border border-transparent focus:border-zinc-300 dark:focus:border-zinc-700 outline-none rounded-lg py-2 pl-11 pr-10 text-sm font-medium text-black dark:text-white transition-all shadow-inner"
           />
           <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 dark:text-zinc-600 font-mono bg-zinc-200 dark:bg-[#1c222d] px-1.5 py-0.5 rounded border border-zinc-300 dark:border-zinc-800">
@@ -159,16 +162,8 @@ export default function Header() {
             </>
           ) : (
             <div className="flex items-center gap-3">
-              {/* Wallet Info */}
-              <div className="hidden md:flex flex-col items-end mr-2">
-                <span className="text-[10px] text-zinc-500 uppercase leading-none mb-1">Authenticated</span>
-                <span className="text-black dark:text-white font-mono text-[10px]">
-                  {user?.wallet?.slice(0, 6)}...{user?.wallet?.slice(-4)}
-                </span>
-              </div>
-
               {/* Portfolio */}
-              <div className="bg-zinc-100 dark:bg-[#12151c] px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
+              <div className="bg-zinc-100 dark:bg-[#12151c] px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 flex items-center gap-3 cursor-pointer" onClick={() => router.push("/portfolio")} >
                 <div className="flex flex-col text-left">
                   <span className="text-[10px] text-zinc-500 uppercase leading-none mb-1">
                     Portfolio
@@ -204,34 +199,46 @@ export default function Header() {
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 ml-2">
-            <button
-              onClick={() => dispatch(toggleTheme())}
-              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-all rounded-lg"
-              title={
-                themeMode === "dark"
-                  ? "Switch to light mode"
-                  : "Switch to dark mode"
-              }
-            >
-              {themeMode === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
-            <div className="relative">
+          <div className="flex items-center gap-2 ml-2">
+            {!isAuthenticated ? (
               <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`p-1.5 hover:text-black dark:hover:text-white transition-colors rounded-lg ${isMenuOpen ? "bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white" : ""}`}
+                onClick={() => dispatch(toggleTheme())}
+                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-all rounded-lg"
+                title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               >
-                <Menu size={22} />
+                {themeMode === "dark" ? <Sun size={20} /> : <Moon size={20} />}
               </button>
+            ) : (
+              <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-all rounded-lg">
+                <Bell size={20} />
+              </button>
+            )}
+
+            <div
+              className="relative flex items-center h-full py-2"
+              onMouseEnter={() => setIsMenuOpen(true)}
+              onMouseLeave={() => setIsMenuOpen(false)}
+            >
+              {!isAuthenticated ? (
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className={`p-1.5 hover:text-black dark:hover:text-white transition-colors rounded-lg ${isMenuOpen ? "bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white" : ""}`}
+                >
+                  <Menu size={22} />
+                </button>
+              ) : (
+                <button
+                  className="flex items-center gap-1.5 p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors rounded-full"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex-shrink-0"></div>
+                  <ChevronDown size={14} className="text-zinc-400" />
+                </button>
+              )}
+
               {isMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsMenuOpen(false)}
-                  />
+                <div className="absolute top-12 right-0 pt-2">
                   <MenuDropdown />
-                </>
+                </div>
               )}
             </div>
           </div>

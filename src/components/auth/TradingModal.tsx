@@ -11,7 +11,7 @@ import { useAccount, useSignMessage, useWriteContract, useWaitForTransactionRece
 import axios from "axios";
 import { parseUnits, type Address } from "viem";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004/api';
 const USDC_ADDRESS = "0x41e94404177041b62124827c1c4ee4f06318c26e" as Address; // Amoy USDC
 
 const ERC20_ABI = [
@@ -52,6 +52,30 @@ export default function TradingModal() {
     }
   }, [isOpen, user, dispatch]);
 
+  // Poll proxy status if deploying
+  useEffect(() => {
+    if (!isOpen || user?.proxyStatus !== 'deploying' || !user?.token) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/auth/proxy-info`, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+        if (data.success && data.result.proxyStatus === 'deployed') {
+          dispatch(updateUser({
+            proxyStatus: 'deployed',
+            proxyWallet: data.result.proxyWallet
+          }));
+          setLoading(null);
+        }
+      } catch (err) {
+        console.error("Error polling proxy info:", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isOpen, user?.proxyStatus, user?.token, dispatch]);
+
   if (!isOpen) return null;
 
   const handleClose = () => {
@@ -73,12 +97,13 @@ export default function TradingModal() {
           proxyStatus: 'deploying',
           proxy_tx_hash: data.result.txHash 
         }));
+        // Note: Do not setLoading(null) here, let the polling useEffect handle it
       } else {
         setError(data.message);
+        setLoading(null);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || err.message);
-    } finally {
       setLoading(null);
     }
   };

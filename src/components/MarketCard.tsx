@@ -143,10 +143,10 @@ export default function MarketCard({
           <span className="text-zinc-400">Monthly</span>
         </div>
         <div className="flex items-center gap-3 text-zinc-400 dark:text-zinc-600">
-          <button className="hover:text-blue-500 transition-colors transform hover:scale-110">
+          <button className="hover:text-blue-500 transition-colors transform hover:scale-110 cursor-not-allowed">
             <Gift size={16} />
           </button>
-          <button className="hover:text-blue-500 transition-colors transform hover:scale-110">
+          <button className="hover:text-blue-500 transition-colors transform hover:scale-110 cursor-not-allowed">
             <Bookmark size={16} />
           </button>
         </div>
