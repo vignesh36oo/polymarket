@@ -1,8 +1,9 @@
 "use client";
-
+ 
 import React from "react";
+import Link from "next/link";
 import { Bookmark, Gift } from "lucide-react";
-
+ 
 interface MarketCardProps {
   image: string;
   title: string;
@@ -12,7 +13,7 @@ interface MarketCardProps {
   category?: string;
   variant?: "single" | "multi" | "binary";
 }
-
+ 
 export default function MarketCard({
   image,
   title,
@@ -30,9 +31,11 @@ export default function MarketCard({
           <img src={image} alt={title} className="w-full h-full object-cover" />
         </div>
         <div className="flex-grow">
-          <h3 className="text-sm font-bold text-black dark:text-white leading-tight line-clamp-2 min-h-[2.5rem]">
-            {title}
-          </h3>
+          <Link href={`/event/${encodeURIComponent(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''))}`}>
+            <h3 className="text-sm font-bold text-black dark:text-white leading-tight line-clamp-2 min-h-[2.5rem] hover:underline cursor-pointer">
+              {title}
+            </h3>
+          </Link>
           {badge && (
             <div className="mt-1 flex items-center gap-1.5">
               <span
@@ -81,7 +84,7 @@ export default function MarketCard({
           </div>
         )}
       </div>
-
+ 
       {/* Middle Section - Options */}
       <div className="flex-grow flex flex-col gap-2 mb-4">
         {variant === "binary" && (
@@ -94,7 +97,7 @@ export default function MarketCard({
             </button>
           </div>
         )}
-
+ 
         {variant === "multi" && (
           <div className="space-y-2.5">
             {options.map((opt, i) => (
@@ -122,7 +125,7 @@ export default function MarketCard({
             ))}
           </div>
         )}
-
+ 
         {variant === "single" && (
           <div className="grid grid-cols-2 gap-2">
             <button className="bg-emerald-500/10 text-emerald-500 font-black py-2.5 rounded-xl border border-emerald-500/5 hover:bg-emerald-500/20 transition-all active:scale-[0.98]">
@@ -134,7 +137,7 @@ export default function MarketCard({
           </div>
         )}
       </div>
-
+ 
       {/* Bottom Section */}
       <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800 mt-auto">
         <div className="flex items-center gap-2 text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
@@ -143,10 +146,10 @@ export default function MarketCard({
           <span className="text-zinc-400">Monthly</span>
         </div>
         <div className="flex items-center gap-3 text-zinc-400 dark:text-zinc-600">
-          <button className="hover:text-blue-500 transition-colors transform hover:scale-110 cursor-not-allowed">
+          <button className="hover:text-blue-500 transition-colors transform hover:scale-110">
             <Gift size={16} />
           </button>
-          <button className="hover:text-blue-500 transition-colors transform hover:scale-110 cursor-not-allowed">
+          <button className="hover:text-blue-500 transition-colors transform hover:scale-110">
             <Bookmark size={16} />
           </button>
         </div>

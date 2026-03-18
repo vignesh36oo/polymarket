@@ -64,10 +64,14 @@ function SettingsContent() {
   );
 }
 
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-zinc-500">Loading Settings...</div>}>
-      <SettingsContent />
-    </Suspense>
+    <ProtectedRoute>
+      <Suspense fallback={<div className="p-8 text-center text-zinc-500">Loading Settings...</div>}>
+        <SettingsContent />
+      </Suspense>
+    </ProtectedRoute>
   );
 }

@@ -13,6 +13,9 @@ interface AuthState {
     proxy_tx_hash?: string;
     isTradingEnabled?: boolean;
     isUSDCapproved?: boolean;
+    bio?: string;
+    profile_image?: string;
+    proxy_wallet?: string;
     token?: string;
   } | null;
   onboardingStep: "none" | "username" | "email";
@@ -60,6 +63,9 @@ export const authSlice = createSlice({
         isUSDCapproved?: boolean;
         username?: string;
         email?: string;
+        bio?: string;
+        profile_image?: string;
+        proxy_wallet?: string;
       } | undefined>
     ) => {
       state.isAuthenticated = true;

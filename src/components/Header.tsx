@@ -230,7 +230,15 @@ export default function Header() {
                 <button
                   className="flex items-center gap-1.5 p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors rounded-full"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex-shrink-0"></div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex-shrink-0 overflow-hidden">
+                    {user?.profile_image && (
+                      <img 
+                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004'}${user.profile_image}`} 
+                        alt="Avatar" 
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
                   <ChevronDown size={14} className="text-zinc-400" />
                 </button>
               )}

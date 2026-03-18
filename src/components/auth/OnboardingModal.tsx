@@ -11,7 +11,7 @@ import {
 } from "@/lib/redux/features/auth/authSlice";
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004';
 
 export default function OnboardingModal() {
   const dispatch = useAppDispatch();
@@ -64,7 +64,7 @@ export default function OnboardingModal() {
         onClick={async () => {
           try {
             if (user?.token) {
-              await axios.post(`${API_URL}/auth/update-profile`, { username }, {
+              await axios.put(`${API_URL}/api/auth/update-profile`, { username }, {
                 headers: { Authorization: `Bearer ${user.token}` }
               });
             }
@@ -108,7 +108,7 @@ export default function OnboardingModal() {
         onClick={async () => {
           try {
             if (user?.token) {
-              await axios.post(`${API_URL}/auth/update-profile`, { email }, {
+              await axios.put(`${API_URL}/api/auth/update-profile`, { email }, {
                 headers: { Authorization: `Bearer ${user.token}` }
               });
             }
